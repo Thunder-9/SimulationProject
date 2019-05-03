@@ -7,12 +7,13 @@
 #include "echeancier.h"
 
 
-
-
-double temps=0;
-long int n=0;
-int compteur=0;
-double cumule=0;
+double waitTime[MAXEVENT];
+long int nbWaitTime;
+int lambda;
+double temps;
+long int n;
+int compteur;
+double cumule;
 echeancier Ech;
 
 double Exp(int lamb){
@@ -96,6 +97,48 @@ int condition_arret(long double old,long double new){
 		if(compteur>1e3)return 1;
 	}
 	return 0;
+}
+
+
+
+void get_lambda(){
+	FILE* fd=fopen("lambda.txt","r");
+	if(fd==NULL){printf("le fichier lambda.txt n'est pas trouvé ou n'a pas pu être ouvert");exit(0);}
+	//à finir 
+
+}
+
+
+void ajoutWt(double attente){
+	int i=0;
+	while(waitTime[i]<attente && i<nbWaitTime)
+		i++;
+	if(i>nbWaitTime){
+		nbWaitTime++;
+		waitTime[i]=attente;
+	}
+	else{
+		int tmp=waitTime[i], tmp2;
+		waitTime[i]=attente;
+		nbWaitTime++;
+		for(i+1; i<nbWaitTime;i++){
+			tmp2=waitTime[i];
+			waitTime[i]=tmp;
+			tmp=tmp2;
+		}
+	}
+}
+
+double percentile(){
+	// return 90percentile
+}
+
+double waitmoy(){
+	double tot=0;
+	for(int i=0;i<nbWaitTime;i++){
+		tot+=waitTime[i];
+	}
+	return tot/(double)nbWaitTime;
 }
 
 
