@@ -30,6 +30,7 @@ double Exp(int lamb){
 void Ajouter_Ech(event e){
 
 	if(Ech.taille<MAXEVENT){
+		e.indiceEch=Ech.taille;
 		Ech.tab[Ech.taille] = e;
 		Ech.taille++;
 
@@ -38,27 +39,28 @@ void Ajouter_Ech(event e){
 }
 
 void Init_Ech(){
-	
 	event e;
 	e.date=0;
 	e.etat=0;
 	e.type=0;
+	e.associe=0;
 	Ech.taille=0;
+	e.indiceEch=0;
 	Ajouter_Ech(e);
 }
 
 
 void Afficher_echeancier(){
 	event e;
-	printf("temps  %f   n %ld taille %d",temps,n,Ech.taille);
+	printf("temps  %f   n %ld taille %d\n",temps,n,Ech.taille);
 	for(int i =0;i<Ech.taille;i++){
 		e=Ech.tab[i];
 		if(e.type==0){
-			printf("Ac %lf, %d",e.date,e.etat);
+			printf("Ac %lf, %d,  %d, %d\n",e.date,e.etat, e.nfile, e.associe);
 
 		}
 		if(e.type==1){
-			printf("FS %lf %d",e.date,e.etat );
+			printf("FS %lf, %d,  %d\n",e.date,e.etat, e.nfile );
 		}
 
 	}
@@ -101,6 +103,9 @@ int condition_arret(long double old,long double new){
 
 
 
+
+
+
 void get_lambda(){
 	FILE* fd=fopen("lambda.txt","r");
 	if(fd==NULL){printf("le fichier lambda.txt n'est pas trouvé ou n'a pas pu être ouvert");exit(0);}
@@ -113,15 +118,15 @@ void ajoutWt(double attente){
 	int i=0;
 	while(waitTime[i]<attente && i<nbWaitTime)
 		i++;
-	if(i>nbWaitTime){
+	if(i>=nbWaitTime){
 		nbWaitTime++;
 		waitTime[i]=attente;
 	}
 	else{
-		int tmp=waitTime[i], tmp2;
+		double tmp=waitTime[i], tmp2;
 		waitTime[i]=attente;
 		nbWaitTime++;
-		for(i+1; i<nbWaitTime;i++){
+		for(i=i+1; i<nbWaitTime;i++){
 			tmp2=waitTime[i];
 			waitTime[i]=tmp;
 			tmp=tmp2;
@@ -130,16 +135,29 @@ void ajoutWt(double attente){
 }
 
 double percentile(){
-	// return 90percentile
+	int pos = nbWaitTime*0.9;
+	return waitTime[pos];
 }
 
 double waitmoy(){
 	double tot=0;
 	for(int i=0;i<nbWaitTime;i++){
 		tot+=waitTime[i];
+		//if(waitTime[i]>0.05)printf(" %d : %lf\n",i,waitTime[i]);
 	}
+	
+	// for(int i=nbWaitTime-1;i>nbWaitTime-20;i--){
+	// 	printf("waittime %d:  %lf\n",i, waitTime[i]);
+	// }
+	// printf("tot %lf    nbWaitTime  %ld \n", tot,nbWaitTime);
 	return tot/(double)nbWaitTime;
 }
 
 
 
+void initWt(){
+	nbWaitTime=0;
+	for(int i=0;i<MAXEVENT;i++){
+		waitTime[i]=0;
+	}
+}

@@ -1,6 +1,6 @@
 #ifndef ECH_H
 #define ECH_H
-#define mu  10
+#define mu  60
 #define MAXEVENT 1000000
 #define MAXTEMPS 5000
 #define EPSILON 1e-6
@@ -11,7 +11,9 @@ typedef struct Event{
 	double date;
 	int etat; // 0 pour non traité, 1 pour traité
 	int nfile;
-	double ac;
+	int associe;
+	double date_ac;
+	int indiceEch;
 }event;
 
 typedef struct echeancier{
@@ -28,5 +30,7 @@ int condition_arret(long double old,long double new);
 void get_lambda();
 void ajoutWt();
 double waitmoy();
+void initWt();
+double percentile();
 
 #endif
