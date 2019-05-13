@@ -6,7 +6,7 @@
 #include <time.h>
 #include <math.h>
 
-long int Nf[10];
+long int Nf[10]; // Nombre de clients dans les files de chaque serveur
 extern int lambda;
 extern double temps;
 extern long int n;
@@ -15,9 +15,7 @@ extern double cumule;
 extern echeancier Ech;
 extern double waitTime[MAXEVENT];
 
-
-
-
+/* Récupère le premier évènement "arrivée client" traité et non associé à une fin de service */
 event Get_Client(int nfile){
 	double min;
 	int imin=-1;
@@ -28,7 +26,6 @@ event Get_Client(int nfile){
 			imin=i;
 			break;
 		}
-
 	}
 
 	for(int i=imin;i<Ech.taille;i++){
@@ -42,6 +39,7 @@ event Get_Client(int nfile){
 	return Ech.tab[imin];
 }
 
+/* Retourne l'indice du serveur ayant la plus petite queue */
 int getmin(){
 	int imin=0;
 	int min=Nf[0];
@@ -54,10 +52,11 @@ int getmin(){
 	return imin;
 }
 
-
-
+/* Traite l'arrivée d'un client.
+ * Si le serveur gérant la file du client traité est libre, une fin de service pour ce client 
+ * est rajoutée dans l'échéancier.
+ * Ajoute une nouvelle arrivée de client (non traitée) dans la plus petite file. */
 void Arrive_Event(event e){
-	// printf("j'execute AC \n");
 	n++;
 	int r = getmin();
 	Nf[r]++;
@@ -82,12 +81,14 @@ void Arrive_Event(event e){
 	temps = e.date;
 }
 
+/* Traite une fin de service.
+ * S'il y a encore des clients dans la file d'attente, récupère le premier et
+ * ajoute sa fin de service dans l'échéancier. */
 void Service_Event(event e){
-	// printf("j'execute FS\n" );
 	if(Nf[e.nfile]>0){
-		Nf[e.nfile]--;n--;
+		Nf[e.nfile]--;
+		n--;
 		if(Nf[e.nfile]>0){
-
 			event e1;
 			event tmp=Get_Client(e.nfile);
 			e1.date_ac=tmp.date;
@@ -96,7 +97,6 @@ void Service_Event(event e){
 			e1.etat = 0;
 			e1.nfile=e.nfile;
 			Ajouter_Ech(e1);
-
 	}
 	ajoutWt(e.date-e.date_ac);
 	temps=e.date;
@@ -104,7 +104,8 @@ void Service_Event(event e){
 }
 
 
-
+/* Simule la file d'attente et calcule la condition d'arrêt en fonction
+ * des temps d'attente des clients */
 void simulateur(FILE *f1){
 	event e;
 	long double oldmoyen;
@@ -118,34 +119,28 @@ void simulateur(FILE *f1){
 	while(condition_arret(oldmoyen,nmoyen)==0){
 		e =Extraire();
 		cumule += (e.date-temps)*n;
-		// printf("cum %f\n",cumule);
 		oldmoyen = nmoyen;
 		nmoyen = cumule/temps;
-		// if(temps==0){
-		// // printf("temps = %F et n = %ld et  nmoyen = %LF\n",temps,n,nmoyen );
-		// // exit(0);
-		// 	printf("temps = 0 et n =0 etnmoyen =0 \n");
-		// 	fprintf(f1,"0   0 \n");
-		// }
-		// else{
-		// 	printf("temps = %F et n = %ld et  nmoyen = %LF\n",temps,n,nmoyen );
-		// 	fprintf(f1,"%F   %LF \n",temps,nmoyen);
-		// }
-	
-
-	if( e.type ==0)
-		Arrive_Event(e);
-	if(e.type ==1)
-		Service_Event(e);
+		if( e.type ==0)
+			Arrive_Event(e);
+		if(e.type ==1)
+			Service_Event(e);
 	}
 }
 
-
+/* Fonction main. Pour chaque valeur de lambda dans le fichier lambda.txt,
+ * simule la file d'attente et sauvegarde les temps moyens d'attente et les 
+ * 90-percentiles dans le fichier simulation_file3.data */
 int main(int argc,char const *argv[]){
 	lambda=90;
 	srandom(getpid()+time(NULL));
 	FILE* f1 =fopen("simulation_file3.data","w");
 	FILE* f2 = fopen("lambda.txt", "r");
+	if(f2 == NULL)
+		return fprintf(stderr, "lambda.txt n'existe pas\n"), -1;
+	if(f1 == NULL)
+		return fprintf(stderr, "impossible de créer ou ouvrir simulation_file1.data\n"),-1;
+	
 	while(fscanf(f2, "%d\n", &lambda) != EOF){
 		temps=0;
 		cumule=0;
@@ -159,7 +154,4 @@ int main(int argc,char const *argv[]){
 	fclose(f1);
 	fclose(f2);
 	exit(0);
-
-
-
 }

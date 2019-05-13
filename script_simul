@@ -1,8 +1,0 @@
-gcc -c echeancier.c   -o echeancier.o
-gcc file1.c echeancier.o -o file1 -lm
-gcc file2.c echeancier.o -o file2 -lm
-gcc file3.c echeancier.o -o file3 -lm
-./file1
-./file2
-./file3
-R CMD BATCH script.R 

@@ -6,16 +6,16 @@
 #include <math.h>
 #include "echeancier.h"
 
+double waitTime[MAXEVENT]; // Tableau des temps d'attente. Permet de calculer le 90-percentile
+long int nbWaitTime; // Nombre d'éléments dans le tableau waitTime
+int lambda; // Valeur de lambda
+double temps; // Temps dans la simuation
+long int n; // Nombre de clients dans la file
+int compteur; // compteur pour la condition d'arrêt 
+double cumule; // cumul du temps d'attente
+echeancier Ech; // Tableau d'évènements
 
-double waitTime[MAXEVENT];
-long int nbWaitTime;
-int lambda;
-double temps;
-long int n;
-int compteur;
-double cumule;
-echeancier Ech;
-
+/* Retourne un variable aléatoire suivant une loi exponentielle de paramètre lamb */
 double Exp(int lamb){
 	double r = (double)random()/RAND_MAX;
 
@@ -27,6 +27,7 @@ double Exp(int lamb){
 
 }
 
+/* Ajoute un évènement dans l'échéancier */
 void Ajouter_Ech(event e){
 
 	if(Ech.taille<MAXEVENT){
@@ -38,6 +39,7 @@ void Ajouter_Ech(event e){
 	else {printf("echeancier plein");exit(0);}	
 }
 
+/* Initialise l'échéancier */
 void Init_Ech(){
 	event e;
 	e.date=0;
@@ -49,25 +51,8 @@ void Init_Ech(){
 	Ajouter_Ech(e);
 }
 
-
-void Afficher_echeancier(){
-	event e;
-	printf("temps  %f   n %ld taille %d\n",temps,n,Ech.taille);
-	for(int i =0;i<Ech.taille;i++){
-		e=Ech.tab[i];
-		if(e.type==0){
-			printf("Ac %lf, %d,  %d, %d\n",e.date,e.etat, e.nfile, e.associe);
-
-		}
-		if(e.type==1){
-			printf("FS %lf, %d,  %d\n",e.date,e.etat, e.nfile );
-		}
-
-	}
-	printf("]\n\n");
-
-}
-
+/* Extrait le premier évènement non traité (celui dont la date est la plus petite)
+ *	et le retourne */
 event Extraire(){
 	int imin;
 	event min;
@@ -92,6 +77,7 @@ event Extraire(){
 	return min;
 }
 
+/* Condition d'arrêt de la simulation */
 int condition_arret(long double old,long double new){
 	if(fabs(old-new)< EPSILON && temps >1000){
 		compteur++;
@@ -101,19 +87,7 @@ int condition_arret(long double old,long double new){
 	return 0;
 }
 
-
-
-
-
-
-void get_lambda(){
-	FILE* fd=fopen("lambda.txt","r");
-	if(fd==NULL){printf("le fichier lambda.txt n'est pas trouvé ou n'a pas pu être ouvert");exit(0);}
-	//à finir 
-
-}
-
-
+/* Ajoute un nouveau temps d'attente dans le tableau waitTime */
 void ajoutWt(double attente){
 	int i=0;
 	while(waitTime[i]<attente && i<nbWaitTime)
@@ -134,27 +108,23 @@ void ajoutWt(double attente){
 	}
 }
 
+/* Renvoie le 90-percentile */
 double percentile(){
 	int pos = nbWaitTime*0.9;
 	return waitTime[pos];
 }
 
+/* Calcule le temps moyen d'attente */
 double waitmoy(){
 	double tot=0;
 	for(int i=0;i<nbWaitTime;i++){
 		tot+=waitTime[i];
-		//if(waitTime[i]>0.05)printf(" %d : %lf\n",i,waitTime[i]);
 	}
 	
-	// for(int i=nbWaitTime-1;i>nbWaitTime-20;i--){
-	// 	printf("waittime %d:  %lf\n",i, waitTime[i]);
-	// }
-	// printf("tot %lf    nbWaitTime  %ld \n", tot,nbWaitTime);
 	return tot/(double)nbWaitTime;
 }
 
-
-
+/* Initialise le tableau des temps d'attente */
 void initWt(){
 	nbWaitTime=0;
 	for(int i=0;i<MAXEVENT;i++){
