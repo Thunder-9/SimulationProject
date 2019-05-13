@@ -8,7 +8,7 @@
 
 double waitTime[MAXEVENT]; // Tableau des temps d'attente. Permet de calculer le 90-percentile
 long int nbWaitTime; // Nombre d'éléments dans le tableau waitTime
-int lambda; // Valeur de lambda
+double lambda; // Valeur de lambda
 double temps; // Temps dans la simuation
 long int n; // Nombre de clients dans la file
 int compteur; // compteur pour la condition d'arrêt 
@@ -16,14 +16,14 @@ double cumule; // cumul du temps d'attente
 echeancier Ech; // Tableau d'évènements
 
 /* Retourne un variable aléatoire suivant une loi exponentielle de paramètre lamb */
-double Exp(int lamb){
+double Exp(double lamb){
 	double r = (double)random()/RAND_MAX;
 
 	while(r==0 || r==1){
 		r = (double)random()/RAND_MAX;
 
 	}
-	return -(log(r)/(lamb*1.0));
+	return -(log(r)/(lamb));
 
 }
 
@@ -116,7 +116,7 @@ double percentile(){
 
 /* Calcule le temps moyen d'attente */
 double waitmoy(){
-	double tot=0;
+	long double tot=0;
 	for(int i=0;i<nbWaitTime;i++){
 		tot+=waitTime[i];
 	}
@@ -128,6 +128,6 @@ double waitmoy(){
 void initWt(){
 	nbWaitTime=0;
 	for(int i=0;i<MAXEVENT;i++){
-		waitTime[i]=0;
+		waitTime[i]=0.0;
 	}
 }
