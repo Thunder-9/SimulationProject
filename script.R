@@ -20,9 +20,9 @@ attach(data)
 waitTime3 = V2
 percentile3=V3
 
-plot(lambda, waitTime1, xlab="Lambda", ylab= "E[A]", col="red",type="l",ylim=c(0.0,0.03));
+plot(lambda, waitTime1, xlab="Lambda", ylab= "E[A]", col="red",type="l",ylim=c(0.0,16));
 lines(lambda, waitTime2, col="blue");
 lines(lambda, waitTime3, col="green");
-plot(lambda, percentile1, xlab="Lambda", ylab= "90 percentile", col="red",type="l", ylim=c(0.0,0.05));
+plot(lambda, percentile1, xlab="Lambda", ylab= "90 percentile", col="red",type="l", ylim=c(0.0,37));
 lines(lambda, percentile2, col="blue");
 lines(lambda, percentile3, col="green");

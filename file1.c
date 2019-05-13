@@ -9,7 +9,7 @@
 
 
 
-extern int lambda;
+extern double lambda;
 extern double temps;
 extern long int n;
 extern int compteur;
@@ -64,6 +64,7 @@ void Arrive_Event(event e){
 
 		Ajouter_Ech(e2);
 		Ech.tab[e.indiceEch].associe=1;
+		ajoutWt((double)0);
 		//e.associe=1;
 	}
 
@@ -82,10 +83,10 @@ void Service_Event(event e){
 			e1.date = e.date + Exp(mu);
 			e1.etat = 0;
 			Ajouter_Ech(e1);
+			ajoutWt(e.date-tmp.date);
 		}
 	
-		// printf("dt: %lf  ac: %lf\n",e.date,e.date_ac);
-		ajoutWt(e.date-e.date_ac);
+		//printf("dt: %lf  ac: %lf\n",e.date,e.date_ac);
 		temps=e.date;
 	}
 }
@@ -110,7 +111,7 @@ void simulateur(FILE *f1){
 		// 	fprintf(f1,"0   0 \n");
 		// }
 		// else{
-		// 	printf("temps = %F et n = %ld et  nmoyen = %LF\n",temps,n,nmoyen );
+		//	printf("temps = %F et n = %ld et  nmoyen = %LF\n",temps,n,nmoyen );
 		// 	//fprintf(f1,"%F   %LF \n",temps,nmoyen);
 		// }
 	
@@ -128,19 +129,19 @@ void simulateur(FILE *f1){
 
 
 int main(int argc,char const *argv[]){
-	lambda=90;
 	srandom(getpid()+time(NULL));
 	FILE* f1 =fopen("simulation_file1.data","w");
 	FILE* f2 = fopen("lambda.txt", "r");
-	while(fscanf(f2, "%d\n", &lambda) != EOF){
+	while(fscanf(f2, "%lf\n", &lambda) != EOF){
 		temps=0;
 		cumule=0;
 		n=0;
 		compteur=0;
 		initWt();	
-		printf("file 1 lambda %d\n", lambda);
+		printf("file 1 lambda %lf\n", lambda);
 		simulateur(f1);
-		fprintf(f1, "%d %lf %lf\n",lambda, waitmoy(), percentile());
+		fprintf(f1, "%lf %lf %lf\n",lambda, waitmoy(), percentile());
+		
 	}
 	
 	fclose(f1);

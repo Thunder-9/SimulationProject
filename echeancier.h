@@ -1,6 +1,6 @@
 #ifndef ECH_H
 #define ECH_H
-#define mu  60
+#define mu  1
 #define MAXEVENT 1000000
 #define MAXTEMPS 5000
 #define EPSILON 1e-6
@@ -21,7 +21,7 @@ typedef struct echeancier{
 	int taille;
 }echeancier;
 
-double Exp(int lamb);
+double Exp(double lamb);
 void Ajouter_Ech(event e);
 void Init_Ech();
 void Afficher_echeancier();

@@ -9,21 +9,21 @@
 
 double waitTime[MAXEVENT];
 long int nbWaitTime;
-int lambda;
+double lambda;
 double temps;
 long int n;
 int compteur;
 double cumule;
 echeancier Ech;
 
-double Exp(int lamb){
+double Exp(double lamb){
 	double r = (double)random()/RAND_MAX;
 
 	while(r==0 || r==1){
 		r = (double)random()/RAND_MAX;
 
 	}
-	return -(log(r)/(lamb*1.0));
+	return -(log(r)/(lamb));
 
 }
 
@@ -140,7 +140,7 @@ double percentile(){
 }
 
 double waitmoy(){
-	double tot=0;
+	long double tot=0;
 	for(int i=0;i<nbWaitTime;i++){
 		tot+=waitTime[i];
 		//if(waitTime[i]>0.05)printf(" %d : %lf\n",i,waitTime[i]);
@@ -158,6 +158,6 @@ double waitmoy(){
 void initWt(){
 	nbWaitTime=0;
 	for(int i=0;i<MAXEVENT;i++){
-		waitTime[i]=0;
+		waitTime[i]=0.0;
 	}
 }
