@@ -3,7 +3,7 @@
 
 #define mu  1 // Paramètre mu
 #define MAXEVENT 1000000 // Nombre maximum d'évènemets
-#define EPSILON 1e-6 // Condition d'arrêt de la simulation
+#define EPSILON 1e-4 // Condition d'arrêt de la simulation
 #define N 10 // Nombre de serveurs
 
 typedef struct Event{
@@ -24,7 +24,7 @@ double Exp(double lamb);
 void Ajouter_Ech(event e);
 void Init_Ech();
 event Extraire();
-int condition_arret(long double old,long double new);
+int condition_arret(long double old,long double new,int tORp);
 void ajoutWt();
 double waitmoy();
 void initWt();

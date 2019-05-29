@@ -11,8 +11,8 @@ long int nbWaitTime; // Nombre d'éléments dans le tableau waitTime
 double lambda; // Valeur de lambda
 double temps; // Temps dans la simuation
 long int n; // Nombre de clients dans la file
-int compteur; // compteur pour la condition d'arrêt 
-double cumule; // cumul du temps d'attente
+int compteurT; // compteur pour la convergence du temps d'attente
+int compteurP; // compteur pour la convergence du 90-percentile du temps d'attente
 echeancier Ech; // Tableau d'évènements
 
 /* Retourne un variable aléatoire suivant une loi exponentielle de paramètre lamb */
@@ -78,11 +78,23 @@ event Extraire(){
 }
 
 /* Condition d'arrêt de la simulation */
-int condition_arret(long double old,long double new){
+int condition_arret(long double old,long double new,int tORp){
 	if(fabs(old-new)< EPSILON && temps >1000){
-		compteur++;
+		if(tORp ==0)
+			compteurT++;
+		else 
+			compteurP++;
 
-		if(compteur>1e3)return 1;
+		if(tORp==0 && compteurT>1e3)
+			return 1;
+		if(tORp==1 && compteurP>50)
+			return 1;
+	}
+	else{
+		if(tORp==0)
+			compteurT=0;
+		else 
+			compteurP=0;
 	}
 	return 0;
 }

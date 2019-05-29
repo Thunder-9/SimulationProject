@@ -10,8 +10,8 @@ long int Nf[10]; // Nombre de clients dans les files de chaque serveur
 extern double lambda;
 extern double temps;
 extern long int n;
-extern int compteur;
-extern double cumule;
+extern int compteurT;
+extern int compteurP;
 extern echeancier Ech;
 extern double waitTime[MAXEVENT];
 
@@ -105,27 +105,48 @@ void Service_Event(event e){
 
 /* Simule la file d'attente et calcule la condition d'arrêt en fonction
  * des temps d'attente des clients */
-void simulateur(FILE *f1){
-	event e;
-	long double oldmoyen;
-	long double nmoyen;
+int simulateur(FILE *f1){
+event e;
+	 double oldT=0;
+	 double newT=0;
+	 double oldP=0;
+	 double newP=0;
 	Init_Ech();
 
 	for(int i=0;i<10;i++){
 		Nf[i]=0;
 	}
 
-	while(condition_arret(oldmoyen,nmoyen)==0){
+	while((condition_arret(oldT,newT,0)==0 || condition_arret(oldP,newP,1)==0) && temps<5000){
 		e =Extraire();
-		cumule += (e.date-temps)*n;
-		oldmoyen = nmoyen;
-		nmoyen = cumule/temps;
-		if( e.type ==0)
-			Arrive_Event(e);
-		if(e.type ==1)
-			Service_Event(e);
+		oldT=newT;
+		newT=waitmoy();
+		oldP=newP;
+		newP=percentile();
+		
+	if( e.type ==0)
+		Arrive_Event(e);
+	if(e.type ==1)
+		Service_Event(e);
+
+
 	}
+
+	//aucun converge
+	if(condition_arret(oldT,newT,0)==0 && condition_arret(oldP,newP,1)==0)
+		return 0;
+	//le percentile ne converge pas
+	if(condition_arret(oldT,newT,0)==1 && condition_arret(oldP,newP,1)==0)
+		return 1;
+	//le remps d'attente ne converge pas
+	if(condition_arret(oldT,newT,0)==0 && condition_arret(oldP,newP,1)==1)
+		return 2;
+	//tout converge
+	if(condition_arret(oldT,newT,0)==1 && condition_arret(oldP,newP,1)==1)
+		return 3;
+return 0;
 }
+
 
 /* Fonction main. Pour chaque valeur de lambda dans le fichier lambda.txt,
  * simule la file d'attente et sauvegarde les temps moyens d'attente et les 
@@ -137,19 +158,28 @@ int main(int argc,char const *argv[]){
 	if(f2 == NULL)
 		return fprintf(stderr, "lambda.txt n'existe pas\n"), -1;
 	if(f1 == NULL)
-		return fprintf(stderr, "impossible de créer ou ouvrir simulation_file1.data\n"),-1;
-	
+		return fprintf(stderr, "impossible de créer ou ouvrir simulation_file2.data\n"),-1;
+	int converge;
 	while(fscanf(f2, "%lf\n", &lambda) != EOF){
-		temps=0;
-		cumule=0;
 		n=0;
-		compteur=0;
+		compteurT=0;
+		compteurP=0;
 		initWt();
 		printf("file 3 lambda %lf\n", lambda);
-		simulateur(f1);
-		fprintf(f1, "%lf %lf %lf\n",lambda, waitmoy(), percentile());
+		converge=simulateur(f1);
+		if(converge==0)
+			fprintf(f1, "%lf %d %d\n",lambda, -1, -1);
+		if(converge==1)
+			fprintf(f1, "%lf %lf %d\n",lambda, waitmoy(), -1);
+		if(converge==2)
+			fprintf(f1, "%lf %d %lf\n",lambda, -1, percentile());
+		if(converge==3)
+			fprintf(f1, "%lf %lf %lf\n",lambda, waitmoy(), percentile());
+		
 	}
 	fclose(f1);
 	fclose(f2);
 	exit(0);
+
+
 }
